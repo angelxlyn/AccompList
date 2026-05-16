@@ -80,8 +80,6 @@ class Task extends Model
         $escaped = e($this->description);
 
         // Match URLs but stop at whitespace, HTML entities, or HTML brackets.
-        // After e(), '&' becomes '&amp;', '<' becomes '&lt;', '>' becomes '&gt;'
-        // so we stop at '&' to avoid swallowing escaped entities.
         return preg_replace(
             '~(https?://[^\s&<>]+)~',
             '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-decoration-none">$1</a>',

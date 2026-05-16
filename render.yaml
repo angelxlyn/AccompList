@@ -1,11 +1,10 @@
 services:
   - type: web
     name: accomplist
-    env: php
+    env: docker
     region: singapore
     plan: free
-    buildCommand: "./render-build.sh"
-    startCommand: "cd /var/www && php artisan serve --host=0.0.0.0 --port=$PORT"
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: APP_NAME
         value: AccompList
@@ -15,6 +14,8 @@ services:
         value: false
       - key: APP_KEY
         generateValue: true
+      - key: APP_URL
+        value: https://accomplist.onrender.com
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
@@ -37,6 +38,12 @@ services:
         fromDatabase:
           name: accomplist-db
           property: password
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: LOG_CHANNEL
+        value: stderr
 
 databases:
   - name: accomplist-db

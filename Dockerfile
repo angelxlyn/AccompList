@@ -1,7 +1,7 @@
-# Use the official PHP image with Apache
+# ── Base image: PHP 8.3 with Apache ──────────────────────────────────────────
 FROM php:8.3-apache
 
-# Install system dependencies
+# ── System dependencies ───────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -14,44 +14,55 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libpq-dev \
-    gnupg
+    gnupg \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js (needed for Vite build)
+# ── Node.js 20 (for Vite build) ───────────────────────────────────────────────
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
+# ── PHP extensions ────────────────────────────────────────────────────────────
 RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd zip
 
-# Enable Apache mod_rewrite
+# ── Apache: enable mod_rewrite + point document root to /public ───────────────
 RUN a2enmod rewrite
 
-# Set working directory
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/*.conf \
+    /etc/apache2/apache2.conf \
+    /etc/apache2/conf-available/*.conf
+
+# ── Render uses a dynamic $PORT — configure Apache to listen on it ────────────
+# We do this at runtime in the start script below.
+
+# ── Working directory ─────────────────────────────────────────────────────────
 WORKDIR /var/www/html
 
-# Copy the application code
+# ── Copy application code ─────────────────────────────────────────────────────
 COPY . .
 
-# Install Composer dependencies
+# ── Composer ──────────────────────────────────────────────────────────────────
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Install NPM dependencies and build assets
+# ── NPM / Vite build ──────────────────────────────────────────────────────────
 RUN npm install && npm run build
 
-# Set permissions for Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# ── Laravel file permissions ──────────────────────────────────────────────────
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-# Update Apache configuration to point to public/
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# ── Startup script ────────────────────────────────────────────────────────────
+# Render injects $PORT at runtime. Apache must listen on that port.
+# We also run migrations here so the DB is always up to date on deploy.
+COPY docker-start.sh /usr/local/bin/docker-start.sh
+RUN chmod +x /usr/local/bin/docker-start.sh
 
-# Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/docker-start.sh"]
