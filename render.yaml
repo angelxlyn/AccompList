@@ -15,7 +15,7 @@ services:
       - key: APP_KEY
         value: base64:01SSTfGuSeuzOWTOxy6BkFhnA9cj+Uzldwjz8+x1GjE=
       - key: APP_URL
-        value: https://accomplist.onrender.com  # Update after first deploy if URL differs
+        value: https://accomplist.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
