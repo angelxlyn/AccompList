@@ -1,10 +1,10 @@
 services:
   - type: web
     name: accomplist
-    env: docker
-    region: singapore
+    env: docker                  # Docker instead of native php (no longer supported)
+    region: singapore            # Closest to Philippines
     plan: free
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: ./Dockerfile # Path to your Dockerfile
     envVars:
       - key: APP_NAME
         value: AccompList
@@ -15,9 +15,9 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        value: https://accomplist.onrender.com
+        value: https://accomplist.onrender.com  # Update after first deploy if URL differs
       - key: DB_CONNECTION
-        value: mysql
+        value: pgsql
       - key: DB_HOST
         fromDatabase:
           name: accomplist-db
@@ -43,7 +43,7 @@ services:
       - key: CACHE_STORE
         value: file
       - key: LOG_CHANNEL
-        value: stderr
+        value: stderr            # Render streams logs from stderr
 
 databases:
   - name: accomplist-db

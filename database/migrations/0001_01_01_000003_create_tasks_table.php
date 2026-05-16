@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      * Creates the 'tasks' table used by the Task ORM model.
@@ -15,10 +14,9 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('task_name', 255);
-            $table->enum('priority', ['High', 'Medium', 'Low'])->default('Medium');
+            $table->string('priority', 20)->default('Medium'); // High, Medium, Low
             $table->date('deadline');
-            $table->enum('status', ['To Do', 'In Progress', 'Completed', 'Submitted'])
-                  ->default('To Do');
+            $table->string('status', 50)->default('To Do');   // To Do, In Progress, Completed, Submitted
             $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
