@@ -38,7 +38,14 @@ class Task extends Model
     {
         // Automatically filter all queries by the user's UUID cookie
         static::addGlobalScope('user_privacy', function ($builder) {
-            $builder->where('user_uuid', request()->cookie('user_uuid'));
+            $uuid = request()->cookie('user_uuid');
+            
+            if ($uuid) {
+                $builder->where('user_uuid', $uuid);
+            } else {
+                // If no cookie is present, show nothing (prevents seeing old NULL-tagged tasks)
+                $builder->where('user_uuid', '=', 'no-uuid-set');
+            }
         });
 
         // Automatically assign the user's UUID cookie when creating a new task
