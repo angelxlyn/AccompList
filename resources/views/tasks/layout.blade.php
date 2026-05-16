@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AccompList</title>
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/AccompList.png') }}?v=2">
-    <link rel="icon" type="image/png" href="{{ asset('images/AccompList.png') }}?v=2">
+    <link rel="shortcut icon" href="/images/AccompList.png?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/AccompList.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/AccompList.png?v=3">
     <!-- Dark Mode Init -->
     <script>
         if (localStorage.getItem('theme') === 'dark') {
