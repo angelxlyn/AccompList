@@ -10,6 +10,10 @@ class Task extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // ── Valid values — single source of truth used by controller validation ──
+    const STATUSES = ['To Do', 'In Progress', 'Completed', 'Submitted'];
+    const PRIORITIES = ['High', 'Medium', 'Low'];
+
     /**
      * The table associated with the model.
      */
@@ -34,7 +38,7 @@ class Task extends Model
     ];
 
     /**
-     * Scope a query to only include tasks with a specific status.
+     * Scope: filter by status.
      */
     public function scopeByStatus($query, $status)
     {
@@ -42,7 +46,7 @@ class Task extends Model
     }
 
     /**
-     * Scope a query to only include tasks with a specific priority.
+     * Scope: filter by priority.
      */
     public function scopeByPriority($query, $priority)
     {
@@ -50,29 +54,38 @@ class Task extends Model
     }
 
     /**
-     * Get priority badge color.
+     * CSS class for status badge — matches summary card colors exactly.
      */
-    public function getPriorityColorAttribute()
+    public function getStatusColorAttribute(): string
     {
-        return match($this->priority) {
-            'High'   => 'danger',
-            'Medium' => 'warning',
-            'Low'    => 'success',
-            default  => 'secondary',
+        return match ($this->status) {
+            'To Do' => 'todo',
+            'In Progress' => 'inprogress',
+            'Completed' => 'completed',
+            'Submitted' => 'submitted',
+            default => 'todo',
         };
     }
 
     /**
-     * Get status badge CSS class.
+     * Description with URLs converted to safe clickable links.
      */
-    public function getStatusColorAttribute()
+    public function getLinkedDescriptionAttribute(): string
     {
-        return match($this->status) {
-            'To Do'       => 'todo',
-            'In Progress' => 'inprogress',
-            'Completed'   => 'completed',
-            'Submitted'   => 'submitted',
-            default       => 'todo',
-        };
+        if (empty($this->description)) {
+            return '';
+        }
+
+        // Escape the raw text first
+        $escaped = e($this->description);
+
+        // Match URLs but stop at whitespace, HTML entities, or HTML brackets.
+        // After e(), '&' becomes '&amp;', '<' becomes '&lt;', '>' becomes '&gt;'
+        // so we stop at '&' to avoid swallowing escaped entities.
+        return preg_replace(
+            '~(https?://[^\s&<>]+)~',
+            '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-decoration-none">$1</a>',
+            $escaped
+        );
     }
 }

@@ -4,20 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+
     /**
-     * Display the Home dashboard with all tasks and count cards.
+     * Home dashboard: summary counts + full paginated task list.
      */
     public function home()
     {
         $counts = [
-            'todo'       => Task::byStatus('To Do')->count(),
+            'todo' => Task::byStatus('To Do')->count(),
             'inprogress' => Task::byStatus('In Progress')->count(),
-            'completed'  => Task::byStatus('Completed')->count(),
-            'submitted'  => Task::byStatus('Submitted')->count(),
-            'total'      => Task::count(),
+            'completed' => Task::byStatus('Completed')->count(),
+            'submitted' => Task::byStatus('Submitted')->count(),
+            'total' => Task::count(),
         ];
 
         $tasks = Task::orderBy('deadline', 'asc')->paginate(10);
@@ -25,22 +28,26 @@ class TaskController extends Controller
         return view('tasks.home', compact('counts', 'tasks'));
     }
 
+    // ── Status Tab Views ──────────────────────────────────────────────────────
+
     /**
-     * Display tasks filtered by status.
+     * Task list filtered by status (To Do / In Progress / Completed / Submitted).
      */
     public function index(Request $request)
     {
         $status = $request->query('status', 'To Do');
 
         $tasks = Task::byStatus($status)
-                     ->orderBy('deadline', 'asc')
-                     ->paginate(10);
+            ->orderBy('deadline', 'asc')
+            ->paginate(10);
 
         return view('tasks.index', compact('tasks', 'status'));
     }
 
+    // ── CRUD ──────────────────────────────────────────────────────────────────
+
     /**
-     * Show the form for creating a new task.
+     * Show the standalone create form (fallback if modal is unavailable).
      */
     public function create()
     {
@@ -48,26 +55,26 @@ class TaskController extends Controller
     }
 
     /**
-     * Store a newly created task in the database.
+     * Store a newly created task.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'task_name'   => 'required|string|max:255',
-            'priority'    => 'required|in:High,Medium,Low',
-            'deadline'    => 'required|date',
-            'status'      => 'required|in:To Do,In Progress,Completed,Submitted',
+            'task_name' => 'required|string|max:255',
+            'priority' => ['required', Rule::in(Task::PRIORITIES)],
+            'deadline' => 'required|date',
+            'status' => ['required', Rule::in(Task::STATUSES)],
             'description' => 'nullable|string|max:1000',
         ]);
 
         Task::create($validated);
 
-        return redirect()->back()
-                         ->with('success', 'Task "' . $validated['task_name'] . '" added successfully!');
+        return redirect()->route('home')
+            ->with('success', 'Task "' . $validated['task_name'] . '" added successfully!');
     }
 
     /**
-     * Show the form for editing an existing task.
+     * Show the standalone edit form (fallback if modal is unavailable).
      */
     public function edit(Task $task)
     {
@@ -75,35 +82,36 @@ class TaskController extends Controller
     }
 
     /**
-     * Update the specified task in the database.
+     * Update an existing task.
      */
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
-            'task_name'   => 'required|string|max:255',
-            'priority'    => 'required|in:High,Medium,Low',
-            'deadline'    => 'required|date',
-            'status'      => 'required|in:To Do,In Progress,Completed,Submitted',
+            'task_name' => 'required|string|max:255',
+            'priority' => ['required', Rule::in(Task::PRIORITIES)],
+            'deadline' => 'required|date',
+            'status' => ['required', Rule::in(Task::STATUSES)],
             'description' => 'nullable|string|max:1000',
         ]);
 
         $task->update($validated);
 
-        return redirect()->back()
-                         ->with('success', 'Task "' . $task->task_name . '" updated successfully!');
+        return redirect()->route('home')
+            ->with('success', 'Task "' . $task->task_name . '" updated successfully!');
     }
 
+    // ── Soft Delete / Restore / Force Delete ──────────────────────────────────
+
     /**
-     * Soft-delete the specified task.
+     * Soft-delete a task (sets deleted_at; excluded from normal queries).
      */
     public function destroy(Task $task)
     {
-        $name   = $task->task_name;
-        $status = $task->status;
+        $name = $task->task_name;
         $task->delete();
 
-        return redirect()->back()
-                         ->with('success', 'Task "' . $name . '" moved to trash.');
+        return redirect()->route('home')
+            ->with('success', 'Task "' . $name . '" moved to trash.');
     }
 
     /**
@@ -114,8 +122,8 @@ class TaskController extends Controller
         $task = Task::onlyTrashed()->findOrFail($id);
         $task->restore();
 
-        return redirect()->back()
-                         ->with('success', 'Task "' . $task->task_name . '" has been restored.');
+        return redirect()->route('tasks.manage', ['category' => 'trash'])
+            ->with('success', 'Task "' . $task->task_name . '" restored.');
     }
 
     /**
@@ -127,71 +135,89 @@ class TaskController extends Controller
         $name = $task->task_name;
         $task->forceDelete();
 
-        return redirect()->back()
-                         ->with('success', 'Task "' . $name . '" permanently deleted.');
+        return redirect()->route('tasks.manage', ['category' => 'trash'])
+            ->with('success', 'Task "' . $name . '" permanently deleted.');
     }
 
+    // ── Manage Lists ──────────────────────────────────────────────────────────
+
     /**
-     * Manage list categories / overview page with dynamic filtering and trash.
+     * Manage hub: browse tasks by status, priority, or view the trash.
      */
     public function manageLists(Request $request)
     {
-        $category = $request->query('category', 'status'); // status, priority, trash
-        $filter   = $request->query('filter');
+        $category = $request->query('category', 'status');
+        $filter = $request->query('filter');
 
-        // Default filters if not provided
+        // Default filter per category
         if (!$filter && $category !== 'trash') {
-            $filter = ($category === 'status') ? 'To Do' : 'High';
+            $filter = ($category === 'priority') ? 'High' : 'To Do';
         }
 
-        $tasks = collect();
-        if ($category === 'status') {
-            $tasks = Task::where('status', $filter)->orderBy('deadline', 'asc')->paginate(10);
-        } elseif ($category === 'priority') {
-            $tasks = Task::where('priority', $filter)->orderBy('deadline', 'asc')->paginate(10);
-        } elseif ($category === 'trash') {
-            $tasks = Task::onlyTrashed()->orderBy('deleted_at', 'desc')->paginate(10);
-        }
+        // Always return a LengthAwarePaginator so the blade never crashes
+        // calling ->total(), ->firstItem(), etc.
+        $tasks = match ($category) {
+            'status' => Task::where('status', $filter)->orderBy('deadline', 'asc')->paginate(10),
+            'priority' => Task::where('priority', $filter)->orderBy('deadline', 'asc')->paginate(10),
+            'trash' => Task::onlyTrashed()->orderBy('deleted_at', 'desc')->paginate(10),
+            default => Task::whereRaw('0 = 1')->paginate(10), // safe empty paginator
+        };
 
         return view('tasks.manage', compact('tasks', 'category', 'filter'));
     }
 
+    // ── Bulk Actions ──────────────────────────────────────────────────────────
+
     /**
-     * Bulk soft-delete tasks.
+     * Bulk soft-delete selected tasks.
      */
     public function bulkDestroy(Request $request)
     {
         $ids = $request->input('ids', []);
-        if (!empty($ids)) {
-            Task::whereIn('id', $ids)->delete();
-            return redirect()->back()->with('success', count($ids) . ' tasks moved to trash.');
+
+        if (empty($ids)) {
+            return redirect()->route('tasks.manage')->with('error', 'No tasks selected.');
         }
-        return redirect()->back()->with('error', 'No tasks selected.');
+
+        Task::whereIn('id', $ids)->delete();
+
+        return redirect()->route('tasks.manage')
+            ->with('success', count($ids) . ' task(s) moved to trash.');
     }
 
     /**
-     * Bulk restore tasks.
+     * Bulk restore selected trashed tasks.
      */
     public function bulkRestore(Request $request)
     {
         $ids = $request->input('ids', []);
-        if (!empty($ids)) {
-            Task::onlyTrashed()->whereIn('id', $ids)->restore();
-            return redirect()->back()->with('success', count($ids) . ' tasks restored.');
+
+        if (empty($ids)) {
+            return redirect()->route('tasks.manage', ['category' => 'trash'])
+                ->with('error', 'No tasks selected.');
         }
-        return redirect()->back()->with('error', 'No tasks selected.');
+
+        Task::onlyTrashed()->whereIn('id', $ids)->restore();
+
+        return redirect()->route('tasks.manage', ['category' => 'trash'])
+            ->with('success', count($ids) . ' task(s) restored.');
     }
 
     /**
-     * Bulk permanent delete.
+     * Bulk permanently delete selected trashed tasks.
      */
     public function bulkForceDelete(Request $request)
     {
         $ids = $request->input('ids', []);
-        if (!empty($ids)) {
-            Task::onlyTrashed()->whereIn('id', $ids)->forceDelete();
-            return redirect()->back()->with('success', count($ids) . ' tasks permanently deleted.');
+
+        if (empty($ids)) {
+            return redirect()->route('tasks.manage', ['category' => 'trash'])
+                ->with('error', 'No tasks selected.');
         }
-        return redirect()->back()->with('error', 'No tasks selected.');
+
+        Task::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+
+        return redirect()->route('tasks.manage', ['category' => 'trash'])
+            ->with('success', count($ids) . ' task(s) permanently deleted.');
     }
 }

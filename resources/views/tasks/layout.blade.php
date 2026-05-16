@@ -92,9 +92,10 @@
         .card-hover {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
         .card-hover:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
         }
 
         /* ── Task Table ── */
@@ -247,74 +248,115 @@
         [data-bs-theme="dark"] body {
             background-color: #18181b;
         }
+
         [data-bs-theme="dark"] .nav-tabs-custom,
         [data-bs-theme="dark"] .content-card {
             background: #27272a;
         }
+
         [data-bs-theme="dark"] .nav-tabs-custom {
             border-bottom-color: #3f3f46;
         }
+
         [data-bs-theme="dark"] .nav-brand {
             color: #fff;
             border-right-color: #3f3f46;
         }
+
         [data-bs-theme="dark"] .nav-tabs-custom .nav-link {
             color: #a1a1aa;
         }
+
         [data-bs-theme="dark"] .nav-tabs-custom .nav-link:hover {
             background: #3f3f46;
             color: #fff;
         }
+
         [data-bs-theme="dark"] .nav-tabs-custom .nav-link.active {
             background: #27272a;
             color: #fff;
             border-color: #3f3f46 #3f3f46 #27272a;
         }
+
         [data-bs-theme="dark"] .task-table th {
             background-color: #3f3f46;
             color: #fff;
             border-bottom-color: #52525b;
         }
+
         [data-bs-theme="dark"] .task-table td {
             border-color: #3f3f46;
             color: #e4e4e7;
         }
+
         [data-bs-theme="dark"] .task-table tbody tr:hover {
             background-color: #3f3f46;
         }
+
         [data-bs-theme="dark"] .modal-content {
             background-color: #27272a;
         }
+
         [data-bs-theme="dark"] .modal-header-custom {
             background: #18181b;
         }
+
         [data-bs-theme="dark"] .page-link {
             background-color: #27272a;
             border-color: #3f3f46;
             color: #a1a1aa;
         }
+
         [data-bs-theme="dark"] .page-link:hover {
             background-color: #3f3f46;
             color: #fff;
         }
+
         [data-bs-theme="dark"] .page-item.active .page-link {
             background-color: #0d6efd;
             border-color: #0d6efd;
             color: #fff;
         }
+
         [data-bs-theme="dark"] .page-item.disabled .page-link {
             background-color: #27272a;
             border-color: #3f3f46;
             color: #52525b;
         }
+
         [data-bs-theme="dark"] .card-hover:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
         }
-        [data-bs-theme="dark"] .card[style*="background:#f5f3ff;"] { background: #221e30 !important; border: 1px solid #342c4a !important; box-shadow: none !important; }
-        [data-bs-theme="dark"] .card[style*="background:#eef2ff;"] { background: #1e1e2d !important; border: 1px solid #2c2c44 !important; box-shadow: none !important; }
-        [data-bs-theme="dark"] .card[style*="background:#fff7ed;"] { background: #291e18 !important; border: 1px solid #422b1e !important; box-shadow: none !important; }
-        [data-bs-theme="dark"] .card[style*="background:#f0fdf4;"] { background: #18241b !important; border: 1px solid #243d2a !important; box-shadow: none !important; }
-        [data-bs-theme="dark"] .card[style*="background:#f0f9ff;"] { background: #16222b !important; border: 1px solid #1e3648 !important; box-shadow: none !important; }
+
+        [data-bs-theme="dark"] .card[style*="background:#f5f3ff;"] {
+            background: #221e30 !important;
+            border: 1px solid #342c4a !important;
+            box-shadow: none !important;
+        }
+
+        [data-bs-theme="dark"] .card[style*="background:#eef2ff;"] {
+            background: #1e1e2d !important;
+            border: 1px solid #2c2c44 !important;
+            box-shadow: none !important;
+        }
+
+        [data-bs-theme="dark"] .card[style*="background:#fff7ed;"] {
+            background: #291e18 !important;
+            border: 1px solid #422b1e !important;
+            box-shadow: none !important;
+        }
+
+        [data-bs-theme="dark"] .card[style*="background:#f0fdf4;"] {
+            background: #18241b !important;
+            border: 1px solid #243d2a !important;
+            box-shadow: none !important;
+        }
+
+        [data-bs-theme="dark"] .card[style*="background:#f0f9ff;"] {
+            background: #16222b !important;
+            border: 1px solid #1e3648 !important;
+            box-shadow: none !important;
+        }
     </style>
 </head>
 
@@ -324,7 +366,7 @@
     <nav class="nav-tabs-custom">
         <!-- App Brand / Home link -->
         <a href="{{ route('home') }}" class="nav-brand {{ request()->routeIs('home') ? 'active-brand' : '' }}">
-            <img src="{{ asset('images/AccompList.png') }}?v={{ time() }}" alt="Logo">
+            <img src="{{ asset('images/AccompList.png') }}" alt="Logo">
             AccompList
         </a>
 
@@ -363,7 +405,8 @@
 
         <!-- Dark Mode Toggle -->
         <div class="ms-auto pe-2">
-            <button id="themeToggle" class="btn btn-sm text-secondary" style="border: none; background: transparent; font-size: 1.2rem;" title="Toggle Dark Mode">
+            <button id="themeToggle" class="btn btn-sm text-secondary"
+                style="border: none; background: transparent; font-size: 1.2rem;" title="Toggle Dark Mode">
                 <i class="bi bi-moon-stars"></i>
             </button>
         </div>
@@ -616,10 +659,10 @@
                     var editModal = new bootstrap.Modal(document.getElementById('editTaskModal'));
                     editModal.show();
                 @else
-                                    var addModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+                                                    var addModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
                     addModal.show();
                 @endif
-                });
+                        });
         </script>
     @endif
 
@@ -673,7 +716,7 @@
                 icon.classList.replace('bi-moon-stars', 'bi-sun');
             }
 
-            toggleBtn.addEventListener('click', function() {
+            toggleBtn.addEventListener('click', function () {
                 let currentTheme = document.documentElement.getAttribute('data-bs-theme');
                 if (currentTheme === 'dark') {
                     document.documentElement.setAttribute('data-bs-theme', 'light');
