@@ -13,7 +13,7 @@ services:
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
-        generateValue: base64:01SSTfGuSeuzOWTOxy6BkFhnA9cj+Uzldwjz8+x1GjE=
+        value: base64:01SSTfGuSeuzOWTOxy6BkFhnA9cj+Uzldwjz8+x1GjE=
       - key: APP_URL
         value: https://accomplist.onrender.com  # Update after first deploy if URL differs
       - key: DB_CONNECTION
