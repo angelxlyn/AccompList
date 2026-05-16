@@ -40,6 +40,10 @@
         {{-- ── Secondary Filter Pills ── --}}
         @if($category === 'status')
             <div class="filter-pills-container d-flex gap-2 mb-4">
+                <a href="{{ route('tasks.manage', ['category' => 'status', 'filter' => 'All']) }}"
+                    class="btn btn-sm {{ $filter === 'All' ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
+                    All
+                </a>
                 @foreach(\App\Models\Task::STATUSES as $s)
                     <a href="{{ route('tasks.manage', ['category' => 'status', 'filter' => $s]) }}"
                         class="btn btn-sm {{ $filter === $s ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
@@ -49,6 +53,10 @@
             </div>
         @elseif($category === 'priority')
             <div class="filter-pills-container d-flex gap-2 mb-4">
+                <a href="{{ route('tasks.manage', ['category' => 'priority', 'filter' => 'All']) }}"
+                    class="btn btn-sm {{ $filter === 'All' ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
+                    All
+                </a>
                 @foreach(\App\Models\Task::PRIORITIES as $p)
                     <a href="{{ route('tasks.manage', ['category' => 'priority', 'filter' => $p]) }}"
                         class="btn btn-sm {{ $filter === $p ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
@@ -82,13 +90,13 @@
                             @if($hasDescription)
                                 <th>Description</th>
                             @endif
-                            @if($category !== 'priority')
+                            @if($category !== 'priority' || $filter === 'All')
                                 <th style="width:120px;">Priority</th>
                             @endif
                             <th style="width:150px; white-space:nowrap;">Deadline</th>
                             @if($category === 'trash')
                                 <th style="width:150px; white-space:nowrap;">Deleted At</th>
-                            @elseif($category !== 'status')
+                            @elseif($category !== 'status' || $filter === 'All')
                                 <th style="width:140px;">Status</th>
                             @endif
                             <th class="text-end" style="width:130px;">Actions</th>
@@ -140,8 +148,8 @@
                                     <td class="small text-muted">{!! $task->linked_description !!}</td>
                                 @endif
 
-                                {{-- Priority (hidden when filtering by priority — already obvious) --}}
-                                @if($category !== 'priority')
+                                {{-- Priority (hidden when filtering by priority — unless 'All' is selected) --}}
+                                @if($category !== 'priority' || $filter === 'All')
                                     <td>
                                         <span class="badge badge-{{ strtolower($task->priority) }} text-white px-2 py-1">
                                             {{ $task->priority }}
@@ -158,7 +166,7 @@
                                         {{ $task->deleted_at->format('Y-m-d') }}<br>
                                         {{ $task->deleted_at->format('H:i') }}
                                     </td>
-                                @elseif($category !== 'status')
+                                @elseif($category !== 'status' || $filter === 'All')
                                     <td>
                                         <span class="badge badge-{{ $task->status_color }} px-2 py-1"
                                             style="font-size:.75rem;font-weight:600;">

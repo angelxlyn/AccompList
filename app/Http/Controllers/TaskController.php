@@ -151,16 +151,18 @@ class TaskController extends Controller
 
         // Default filter per category
         if (!$filter && $category !== 'trash') {
-            $filter = ($category === 'priority') ? 'High' : 'To Do';
+            $filter = 'All';
         }
 
         // Always return a LengthAwarePaginator so the blade never crashes
         // calling ->total(), ->firstItem(), etc.
         $tasks = match ($category) {
-            'status' => Task::where('status', $filter)->orderBy('deadline', 'asc')->paginate(10),
-            'priority' => Task::where('priority', $filter)->orderBy('deadline', 'asc')->paginate(10),
+            'status' => Task::when($filter && $filter !== 'All', fn($q) => $q->where('status', $filter))
+                ->orderBy('deadline', 'asc')->paginate(10),
+            'priority' => Task::when($filter && $filter !== 'All', fn($q) => $q->where('priority', $filter))
+                ->orderBy('deadline', 'asc')->paginate(10),
             'trash' => Task::onlyTrashed()->orderBy('deleted_at', 'desc')->paginate(10),
-            default => Task::whereRaw('0 = 1')->paginate(10), // safe empty paginator
+            default => Task::whereRaw('0 = 1')->paginate(10),
         };
 
         return view('tasks.manage', compact('tasks', 'category', 'filter'));
