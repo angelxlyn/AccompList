@@ -21,12 +21,12 @@ class EnsureUserUuid
         if (!$uuid) {
             $uuid = (string) Str::uuid();
 
-            // Add to current request so it's available immediately in the same request cycle
-            $request->cookies->set('user_uuid', $uuid);
+            // Force the cookie into the current request so controllers/models can see it immediately
+            $request->cookies->add(['user_uuid' => $uuid]);
 
             $response = $next($request);
 
-            // Set cookie on the response for future requests (1 year)
+            // Set cookie on the response for future requests
             return $response->withCookie(cookie()->forever('user_uuid', $uuid));
         }
 
