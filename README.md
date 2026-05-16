@@ -5,11 +5,13 @@ AccompList is a streamlined task management application built with Laravel, desi
 ## ✨ Features
 
 - **📊 Dashboard**: Real-time summary cards and a comprehensive task list.
+- **🛡️ Privacy-First**: Anonymous user tracking via secure UUID cookies—no login or personal data required.
+- **📱 Mobile Optimized**: Swipable navigation tabs and optimized table layouts for a seamless mobile experience.
 - **🌙 Dark Mode**: Support for a dark theme that persists across your sessions.
 - **⚡ Quick Management**: Add and update tasks instantly using modals without page reloads.
 - **📂 Advanced Organization**: Filter and manage tasks by Status, Priority, or Trash via a dedicated management hub.
 - **🧹 Bulk Actions**: Multi-select tasks to move them to trash, restore them, or delete them permanently in one go.
-- **🚨 Smart Deadlines**: Visual badges that highlight Overdue tasks or those due within 2 weeks.
+- **🚨 Smart Deadlines**: Color-coded badges for Overdue (Red), Urgent (Yellow, <3 days), and Upcoming (Blue) tasks.
 - **🔍 Intelligent Search**: Dynamic search and filtering that narrows down tasks as you type.
 - **🔗 Smart Descriptions**: Auto-detects links in task descriptions and makes them clickable.
 
