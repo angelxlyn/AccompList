@@ -14,30 +14,32 @@
         </div>
 
         {{-- ── Primary Category Tabs ── --}}
-        <ul class="nav nav-pills mb-4 manage-pills bg-light p-1 rounded-3 d-inline-flex" style="border:1px solid #dee2e6;">
-            <li class="nav-item">
-                <a class="nav-link {{ $category === 'status' ? 'active' : '' }}"
-                    href="{{ route('tasks.manage', ['category' => 'status']) }}">
-                    <i class="bi bi-grid-3x3-gap me-1"></i>By Status
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $category === 'priority' ? 'active' : '' }}"
-                    href="{{ route('tasks.manage', ['category' => 'priority']) }}">
-                    <i class="bi bi-flag me-1"></i>By Priority
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ $category === 'trash' ? 'active' : '' }}"
-                    href="{{ route('tasks.manage', ['category' => 'trash']) }}">
-                    <i class="bi bi-trash3 me-1"></i>Trash
-                </a>
-            </li>
-        </ul>
+        <div class="manage-pills-container mb-4">
+            <ul class="nav nav-pills manage-pills bg-light p-1 rounded-3 d-inline-flex" style="border:1px solid #dee2e6;">
+                <li class="nav-item">
+                    <a class="nav-link {{ $category === 'status' ? 'active' : '' }}"
+                        href="{{ route('tasks.manage', ['category' => 'status']) }}">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>By Status
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $category === 'priority' ? 'active' : '' }}"
+                        href="{{ route('tasks.manage', ['category' => 'priority']) }}">
+                        <i class="bi bi-flag me-1"></i>By Priority
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $category === 'trash' ? 'active' : '' }}"
+                        href="{{ route('tasks.manage', ['category' => 'trash']) }}">
+                        <i class="bi bi-trash3 me-1"></i>Trash
+                    </a>
+                </li>
+            </ul>
+        </div>
 
         {{-- ── Secondary Filter Pills ── --}}
         @if($category === 'status')
-            <div class="d-flex gap-2 mb-4 flex-wrap">
+            <div class="filter-pills-container d-flex gap-2 mb-4">
                 @foreach(\App\Models\Task::STATUSES as $s)
                     <a href="{{ route('tasks.manage', ['category' => 'status', 'filter' => $s]) }}"
                         class="btn btn-sm {{ $filter === $s ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
@@ -46,7 +48,7 @@
                 @endforeach
             </div>
         @elseif($category === 'priority')
-            <div class="d-flex gap-2 mb-4 flex-wrap">
+            <div class="filter-pills-container d-flex gap-2 mb-4">
                 @foreach(\App\Models\Task::PRIORITIES as $p)
                     <a href="{{ route('tasks.manage', ['category' => 'priority', 'filter' => $p]) }}"
                         class="btn btn-sm {{ $filter === $p ? 'btn-primary' : 'btn-outline-secondary' }} px-3 rounded-pill fw-semibold">
@@ -75,7 +77,7 @@
                             <th style="width:40px;">
                                 <input type="checkbox" id="selectAll" class="form-check-input">
                             </th>
-                            <th style="width:60px;">No.</th>
+                            <th style="width:60px;" class="col-no">No.</th>
                             <th>Task Name</th>
                             @if($hasDescription)
                                 <th>Description</th>
@@ -83,9 +85,9 @@
                             @if($category !== 'priority')
                                 <th style="width:120px;">Priority</th>
                             @endif
-                            <th style="width:130px;">Deadline</th>
+                            <th style="width:150px; white-space:nowrap;">Deadline</th>
                             @if($category === 'trash')
-                                <th style="width:150px;">Deleted At</th>
+                                <th style="width:150px; white-space:nowrap;">Deleted At</th>
                             @elseif($category !== 'status')
                                 <th style="width:140px;">Status</th>
                             @endif
@@ -102,11 +104,11 @@
                                 </td>
 
                                 {{-- Row number --}}
-                                <td>{{ $tasks->firstItem() + $index }}.</td>
+                                <td class="col-no">{{ $tasks->firstItem() + $index }}.</td>
 
                                 {{-- Task Name + deadline badge --}}
                                 <td class="fw-medium">
-                                    <span style="{{ $category === 'trash' ? 'text-decoration:line-through;' : '' }}">
+                                    <span>
                                         {{ $task->task_name }}
                                     </span>
                                     @if($category !== 'trash' && !in_array($task->status, ['Completed', 'Submitted']))
@@ -118,12 +120,16 @@
                                         @if($diff < 0)
                                             <span class="badge bg-danger ms-1"
                                                 style="font-size:.65rem;vertical-align:middle;">Overdue</span>
-                                        @elseif($diff === 0)
-                                            <span class="badge bg-warning text-dark ms-1"
-                                                style="font-size:.65rem;vertical-align:middle;">Due Today</span>
-                                        @elseif($diff <= 14)
+                                        @elseif($diff >= 0 && $diff <= 3)
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;vertical-align:middle;">
+                                                @if($diff == 0) Due Today
+                                                @elseif($diff == 1) Due Tomorrow
+                                                @else Due in {{ $diff }} days
+                                                @endif
+                                            </span>
+                                        @elseif($diff > 3 && $diff <= 14)
                                             <span class="badge bg-info text-white ms-1" style="font-size:.65rem;vertical-align:middle;">
-                                                {{ $diff === 1 ? 'Due Tomorrow' : "Due in {$diff} days" }}
+                                                Due in {{ $diff }} days
                                             </span>
                                         @endif
                                     @endif
@@ -144,11 +150,14 @@
                                 @endif
 
                                 {{-- Deadline --}}
-                                <td>{{ $task->deadline->format('Y-m-d') }}</td>
+                                <td style="white-space:nowrap;">{{ $task->deadline->format('Y-m-d') }}</td>
 
                                 {{-- Deleted At / Status --}}
                                 @if($category === 'trash')
-                                    <td>{{ $task->deleted_at->format('Y-m-d H:i') }}</td>
+                                    <td style="white-space:nowrap;">
+                                        {{ $task->deleted_at->format('Y-m-d') }}<br>
+                                        {{ $task->deleted_at->format('H:i') }}
+                                    </td>
                                 @elseif($category !== 'status')
                                     <td>
                                         <span class="badge badge-{{ $task->status_color }} px-2 py-1"

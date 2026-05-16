@@ -69,7 +69,7 @@ class TaskController extends Controller
 
         Task::create($validated);
 
-        return redirect()->route('home')
+        return back()
             ->with('success', 'Task "' . $validated['task_name'] . '" added successfully!');
     }
 
@@ -96,7 +96,7 @@ class TaskController extends Controller
 
         $task->update($validated);
 
-        return redirect()->route('home')
+        return back()
             ->with('success', 'Task "' . $task->task_name . '" updated successfully!');
     }
 
@@ -110,7 +110,7 @@ class TaskController extends Controller
         $name = $task->task_name;
         $task->delete();
 
-        return redirect()->route('home')
+        return back()
             ->with('success', 'Task "' . $name . '" moved to trash.');
     }
 
@@ -122,7 +122,7 @@ class TaskController extends Controller
         $task = Task::onlyTrashed()->findOrFail($id);
         $task->restore();
 
-        return redirect()->route('tasks.manage', ['category' => 'trash'])
+        return back()
             ->with('success', 'Task "' . $task->task_name . '" restored.');
     }
 
@@ -135,7 +135,7 @@ class TaskController extends Controller
         $name = $task->task_name;
         $task->forceDelete();
 
-        return redirect()->route('tasks.manage', ['category' => 'trash'])
+        return back()
             ->with('success', 'Task "' . $name . '" permanently deleted.');
     }
 
@@ -181,7 +181,7 @@ class TaskController extends Controller
 
         Task::whereIn('id', $ids)->delete();
 
-        return redirect()->route('tasks.manage')
+        return back()
             ->with('success', count($ids) . ' task(s) moved to trash.');
     }
 
@@ -199,7 +199,7 @@ class TaskController extends Controller
 
         Task::onlyTrashed()->whereIn('id', $ids)->restore();
 
-        return redirect()->route('tasks.manage', ['category' => 'trash'])
+        return back()
             ->with('success', count($ids) . ' task(s) restored.');
     }
 
@@ -217,7 +217,7 @@ class TaskController extends Controller
 
         Task::onlyTrashed()->whereIn('id', $ids)->forceDelete();
 
-        return redirect()->route('tasks.manage', ['category' => 'trash'])
+        return back()
             ->with('success', count($ids) . ' task(s) permanently deleted.');
     }
 }

@@ -35,88 +35,95 @@
         @php
             $hasDescription = $tasks->some(fn($t) => !empty($t->description));
         @endphp
-        <table class="table task-table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th style="width:60px;">No.</th>
-                    <th>Task Name</th>
-                    @if($hasDescription)
-                        <th>Description</th>
-                    @endif
-                    <th style="width:110px;">Priority</th>
-                    <th style="width:130px;">Deadline</th>
-                    <th style="width:130px; white-space:nowrap;" class="text-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($tasks as $index => $task)
+        <div class="table-responsive">
+            <table class="table task-table table-hover mb-0">
+                <thead>
                     <tr>
-                        <td class="text-muted fw-semibold">
-                            {{ ($tasks->currentPage() - 1) * $tasks->perPage() + $index + 1 }}.
-                        </td>
-
-                        <td>
-                            {{ $task->task_name }}
-                            @php
-                                $now = now()->startOfDay();
-                                $deadline = $task->deadline->startOfDay();
-                                $diff = $now->diffInDays($deadline, false);
-                            @endphp
-                            @if($task->status !== 'Completed' && $task->status !== 'Submitted')
-                                @if($diff < 0)
-                                    <span class="badge bg-danger ms-1" style="font-size: 0.65rem; vertical-align: middle;">Overdue</span>
-                                @elseif($diff == 0)
-                                    <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem; vertical-align: middle;">Due Today</span>
-                                @elseif($diff > 0 && $diff <= 14)
-                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.65rem; vertical-align: middle;">
-                                        {{ $diff == 1 ? 'Due Tomorrow' : "Due in $diff days" }}
-                                    </span>
-                                @endif
-                            @endif
-                        </td>
-
+                        <th style="width:60px;" class="col-no">No.</th>
+                        <th>Task Name</th>
                         @if($hasDescription)
-                            <td class="small text-muted">
-                                {!! preg_replace('~(https?://[^\s<>]+)~', '<a href="$1" target="_blank" class="text-decoration-none">$1</a>', e($task->description)) !!}
-                            </td>
+                            <th>Description</th>
                         @endif
-
-                        <td>
-                            <span class="badge badge-{{ strtolower($task->priority) }} text-white px-2 py-1">
-                                {{ $task->priority }}
-                            </span>
-                        </td>
-
-                        <td>{{ $task->deadline->format('Y-m-d') }}</td>
-
-                        <td style="white-space:nowrap;" class="text-center">
-                            <button type="button" 
-                                    class="btn btn-update btn-sm btn-edit-task"
-                                    title="Update Task"
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editTaskModal"
-                                    data-id="{{ $task->id }}"
-                                    data-name="{{ $task->task_name }}"
-                                    data-priority="{{ $task->priority }}"
-                                    data-deadline="{{ $task->deadline->format('Y-m-d') }}"
-                                    data-status="{{ $task->status }}"
-                                    data-description="{{ $task->description }}">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <form action="{{ route('tasks.destroy', $task->id) }}"
-                                  method="POST" class="d-inline"
-                                  onsubmit="return confirm('Remove task \'{{ addslashes($task->task_name) }}\'?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-remove btn-sm" title="Move to Trash">
-                                    <i class="bi bi-trash3"></i>
-                                </button>
-                            </form>
-                        </td>
+                        <th style="width:110px;">Priority</th>
+                        <th style="width:150px; white-space:nowrap;">Deadline</th>
+                        <th style="width:130px; white-space:nowrap;" class="text-center">Actions</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($tasks as $index => $task)
+                        <tr>
+                            <td class="text-muted fw-semibold col-no">
+                                {{ ($tasks->currentPage() - 1) * $tasks->perPage() + $index + 1 }}.
+                            </td>
+
+                            <td>
+                                {{ $task->task_name }}
+                                @php
+                                    $now = now()->startOfDay();
+                                    $deadline = $task->deadline->startOfDay();
+                                    $diff = $now->diffInDays($deadline, false);
+                                @endphp
+                                @if($task->status !== 'Completed' && $task->status !== 'Submitted')
+                                    @if($diff < 0)
+                                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem; vertical-align: middle;">Overdue</span>
+                                    @elseif($diff >= 0 && $diff <= 3)
+                                        <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65rem; vertical-align: middle;">
+                                            @if($diff == 0) Due Today
+                                            @elseif($diff == 1) Due Tomorrow
+                                            @else Due in {{ $diff }} days
+                                            @endif
+                                        </span>
+                                    @elseif($diff > 3 && $diff <= 14)
+                                        <span class="badge bg-info text-white ms-1" style="font-size: 0.65rem; vertical-align: middle;">
+                                            Due in {{ $diff }} days
+                                        </span>
+                                    @endif
+                                @endif
+                            </td>
+
+                            @if($hasDescription)
+                                <td class="small text-muted">
+                                    {!! preg_replace('~(https?://[^\s<>]+)~', '<a href="$1" target="_blank" class="text-decoration-none">$1</a>', e($task->description)) !!}
+                                </td>
+                            @endif
+
+                            <td>
+                                <span class="badge badge-{{ strtolower($task->priority) }} text-white px-2 py-1">
+                                    {{ $task->priority }}
+                                </span>
+                            </td>
+
+                            <td style="white-space:nowrap;">{{ $task->deadline->format('Y-m-d') }}</td>
+
+                            <td style="white-space:nowrap;" class="text-center">
+                                <button type="button" 
+                                        class="btn btn-update btn-sm btn-edit-task"
+                                        title="Update Task"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editTaskModal"
+                                        data-id="{{ $task->id }}"
+                                        data-name="{{ $task->task_name }}"
+                                        data-priority="{{ $task->priority }}"
+                                        data-deadline="{{ $task->deadline->format('Y-m-d') }}"
+                                        data-status="{{ $task->status }}"
+                                        data-description="{{ $task->description }}">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <form action="{{ route('tasks.destroy', $task->id) }}"
+                                      method="POST" class="d-inline"
+                                      onsubmit="return confirm('Remove task \'{{ addslashes($task->task_name) }}\'?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-remove btn-sm" title="Move to Trash">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
         <div class="d-flex align-items-center justify-content-between mt-3 flex-wrap gap-2">
             <p class="text-muted mb-0 small">

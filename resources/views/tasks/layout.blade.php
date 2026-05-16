@@ -23,6 +23,30 @@
         body {
             background-color: #f5f6fa;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* ── Custom Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0,0,0,0.25);
+        }
+        [data-bs-theme="dark"] ::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+        }
+        [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.15);
         }
 
         /* ── Top Navigation Tabs ── */
@@ -359,6 +383,82 @@
             border: 1px solid #1e3648 !important;
             box-shadow: none !important;
         }
+
+        /* ── Mobile Optimization ── */
+        @media (max-width: 768px) {
+            .nav-tabs-custom {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                justify-content: flex-start;
+                padding: 10px;
+                gap: 0;
+            }
+
+            .nav-tabs-custom .nav {
+                flex-wrap: nowrap !important;
+                display: flex !important;
+                flex-direction: row !important;
+            }
+
+            .nav-brand {
+                border-right: none;
+                margin-right: 0.5rem;
+                padding-right: 0.75rem;
+                flex-shrink: 0;
+            }
+
+            .nav-tabs-custom .nav-link {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
+
+            .content-card {
+                padding: 16px;
+                margin-top: 10px;
+            }
+
+            /* Hide only the 'No.' column on very small screens to save space */
+            @media (max-width: 576px) {
+                .col-no {
+                    display: none !important;
+                }
+            }
+
+            .w-100-mobile {
+                width: 100% !important;
+            }
+            .search-group, .filter-select {
+                width: 100% !important;
+            }
+            .filter-select {
+                flex: 1;
+            }
+
+            /* Manage Page Mobile Adjustments */
+            .manage-pills-container, .filter-pills-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+            }
+            .manage-pills-container::-webkit-scrollbar, .filter-pills-container::-webkit-scrollbar {
+                display: none;
+            }
+            .manage-pills, .filter-pills-container {
+                flex-wrap: nowrap !important;
+                white-space: nowrap;
+            }
+            .filter-pills-container .btn {
+                flex-shrink: 0;
+            }
+        }
+
+        /* Desktop defaults for these classes */
+        .search-group { width: 250px; }
+        .filter-select { width: 145px; }
+        .w-100-mobile { width: auto; }
     </style>
 </head>
 
@@ -562,9 +662,9 @@
                             <label for="edit_task_name" class="form-label fw-semibold">
                                 Task Name <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control @error('edit_task_name') is-invalid @enderror"
+                            <input type="text" class="form-control @error('task_name') is-invalid @enderror"
                                 id="edit_task_name" name="task_name" value="{{ old('task_name') }}" autofocus>
-                            @error('edit_task_name')
+                            @error('task_name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -574,7 +674,7 @@
                             <label for="edit_priority" class="form-label fw-semibold">
                                 Priority <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select @error('edit_priority') is-invalid @enderror" id="edit_priority"
+                            <select class="form-select @error('priority') is-invalid @enderror" id="edit_priority"
                                 name="priority">
                                 @foreach(['High', 'Medium', 'Low'] as $p)
                                     <option value="{{ $p }}" {{ old('priority') === $p ? 'selected' : '' }}>
@@ -582,7 +682,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('edit_priority')
+                            @error('priority')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -592,9 +692,9 @@
                             <label for="edit_deadline" class="form-label fw-semibold">
                                 Deadline <span class="text-danger">*</span>
                             </label>
-                            <input type="date" class="form-control @error('edit_deadline') is-invalid @enderror"
+                            <input type="date" class="form-control @error('deadline') is-invalid @enderror"
                                 id="edit_deadline" name="deadline" value="{{ old('deadline') }}">
-                            @error('edit_deadline')
+                            @error('deadline')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -604,7 +704,7 @@
                             <label for="edit_status" class="form-label fw-semibold">
                                 Status <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select @error('edit_status') is-invalid @enderror" id="edit_status"
+                            <select class="form-select @error('status') is-invalid @enderror" id="edit_status"
                                 name="status">
                                 @foreach(['To Do', 'In Progress', 'Completed', 'Submitted'] as $s)
                                     <option value="{{ $s }}" {{ old('status') === $s ? 'selected' : '' }}>
@@ -612,7 +712,7 @@
                                     </option>
                                 @endforeach
                             </select>
-                            @error('edit_status')
+                            @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -620,9 +720,9 @@
                         {{-- Description --}}
                         <div class="mb-4">
                             <label for="edit_description" class="form-label fw-semibold">Description</label>
-                            <textarea class="form-control @error('edit_description') is-invalid @enderror"
+                            <textarea class="form-control @error('description') is-invalid @enderror"
                                 id="edit_description" name="description" rows="3">{{ old('description') }}</textarea>
-                            @error('edit_description')
+                            @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -683,8 +783,9 @@
                     const status = this.dataset.status;
                     const description = this.dataset.description;
 
-                    // Update form action
-                    editForm.action = `/tasks/${id}`;
+                    // Update form action using the proper route structure
+                    const baseUpdateUrl = "{{ route('tasks.update', ['task' => ':id']) }}";
+                    editForm.action = baseUpdateUrl.replace(':id', id);
 
                     // Add hidden input for task_id to handle validation errors
                     let idInput = editForm.querySelector('input[name="task_id"]');

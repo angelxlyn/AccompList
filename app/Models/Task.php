@@ -36,22 +36,21 @@ class Task extends Model
      */
     protected static function booted()
     {
-        // Automatically filter all queries by the user's UUID cookie
+        // Automatically filter all queries by the user's UUID
         static::addGlobalScope('user_privacy', function ($builder) {
-            $uuid = request()->cookie('user_uuid');
+            $uuid = request()->get('user_uuid') ?? request()->cookie('user_uuid');
             
             if ($uuid) {
                 $builder->where('user_uuid', $uuid);
             } else {
-                // If no cookie is present, show nothing (prevents seeing old NULL-tagged tasks)
                 $builder->where('user_uuid', '=', 'no-uuid-set');
             }
         });
 
-        // Automatically assign the user's UUID cookie when creating a new task
+        // Automatically assign the user's UUID when creating a new task
         static::creating(function ($task) {
             if (!$task->user_uuid) {
-                $task->user_uuid = request()->cookie('user_uuid');
+                $task->user_uuid = request()->get('user_uuid') ?? request()->cookie('user_uuid');
             }
         });
     }

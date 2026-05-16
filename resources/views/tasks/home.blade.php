@@ -5,14 +5,12 @@
 
         {{-- ── Top Bar: Title + Search + Add Task ── --}}
         <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-
             <h5 class="fw-bold mb-0">
                 <i class="bi bi-speedometer2 me-2 text-primary"></i>Dashboard
             </h5>
 
-            <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
-
-                <div class="input-group" style="width:250px;">
+            <div class="d-flex align-items-center gap-2 flex-wrap ms-auto w-100-mobile">
+                <div class="input-group search-group">
                     <span class="input-group-text bg-transparent border-end-0 px-3">
                         <i class="bi bi-search text-muted"></i>
                     </span>
@@ -20,20 +18,22 @@
                         class="form-control bg-transparent border-start-0 ps-0" style="box-shadow:none;">
                 </div>
 
-                <select id="filterPriority" class="form-select px-3" style="width:140px; box-shadow:none;">
-                    <option value="">Priority</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                </select>
+                <div class="d-flex gap-2 w-100-mobile">
+                    <select id="filterPriority" class="form-select px-3 filter-select" style="box-shadow:none;">
+                        <option value="">Priority</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
 
-                <select id="filterStatus" class="form-select px-3" style="width:145px; box-shadow:none;">
-                    <option value="">Status</option>
-                    <option value="To Do">To Do</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Submitted">Submitted</option>
-                </select>
+                    <select id="filterStatus" class="form-select px-3 filter-select" style="box-shadow:none;">
+                        <option value="">Status</option>
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Submitted">Submitted</option>
+                    </select>
+                </div>
 
                 <button id="btnClear" class="btn btn-outline-secondary d-none px-3">
                     <i class="bi bi-x-lg me-1"></i>Clear
@@ -114,16 +114,17 @@
                 $hasDescription = $tasks->some(fn($t) => !empty($t->description));
             @endphp
 
-            <table class="table task-table table-hover mb-0" id="taskTable">
+            <div class="table-responsive">
+                <table class="table task-table table-hover mb-0" id="taskTable">
                 <thead>
                     <tr>
-                        <th style="width:60px;">No.</th>
+                        <th style="width:60px;" class="col-no">No.</th>
                         <th>Task Name</th>
                         @if($hasDescription)
                             <th>Description</th>
                         @endif
                         <th style="width:110px;">Priority</th>
-                        <th style="width:130px;">Deadline</th>
+                        <th style="width:150px; white-space:nowrap;">Deadline</th>
                         <th style="width:120px;">Status</th>
                         <th style="width:100px; white-space:nowrap;" class="text-center">Actions</th>
                     </tr>
@@ -133,7 +134,7 @@
                         <tr data-name="{{ strtolower($task->task_name) }}" data-priority="{{ $task->priority }}"
                             data-status="{{ $task->status }}">
 
-                            <td class="text-muted fw-semibold row-sn">
+                            <td class="text-muted fw-semibold row-sn col-no">
                                 {{ ($tasks->currentPage() - 1) * $tasks->perPage() + $index + 1 }}.
                             </td>
 
@@ -147,12 +148,16 @@
                                 @if(!in_array($task->status, ['Completed', 'Submitted']))
                                     @if($diff < 0)
                                         <span class="badge bg-danger ms-1" style="font-size:.65rem;vertical-align:middle;">Overdue</span>
-                                    @elseif($diff === 0)
-                                        <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;vertical-align:middle;">Due
-                                            Today</span>
-                                    @elseif($diff <= 14)
+                                    @elseif($diff >= 0 && $diff <= 3)
+                                        <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;vertical-align:middle;">
+                                            @if($diff == 0) Due Today
+                                            @elseif($diff == 1) Due Tomorrow
+                                            @else Due in {{ $diff }} days
+                                            @endif
+                                        </span>
+                                    @elseif($diff > 3 && $diff <= 14)
                                         <span class="badge bg-info text-white ms-1" style="font-size:.65rem;vertical-align:middle;">
-                                            {{ $diff === 1 ? 'Due Tomorrow' : "Due in {$diff} days" }}
+                                            Due in {{ $diff }} days
                                         </span>
                                     @endif
                                 @endif
@@ -168,7 +173,7 @@
                                 </span>
                             </td>
 
-                            <td>{{ $task->deadline->format('Y-m-d') }}</td>
+                            <td style="white-space:nowrap;">{{ $task->deadline->format('Y-m-d') }}</td>
 
                             <td>
                                 <span class="badge badge-{{ $task->status_color }} px-2 py-1">
@@ -200,6 +205,7 @@
                     @endforeach
                 </tbody>
             </table>
+        </div>
 
             {{-- No-results row (shown by JS when filter finds nothing) --}}
             <div id="noResults" class="text-center py-4 d-none">
