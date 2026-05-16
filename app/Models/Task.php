@@ -28,7 +28,26 @@ class Task extends Model
         'deadline',
         'status',
         'description',
+        'user_uuid',
     ];
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted()
+    {
+        // Automatically filter all queries by the user's UUID cookie
+        static::addGlobalScope('user_privacy', function ($builder) {
+            $builder->where('user_uuid', request()->cookie('user_uuid'));
+        });
+
+        // Automatically assign the user's UUID cookie when creating a new task
+        static::creating(function ($task) {
+            if (!$task->user_uuid) {
+                $task->user_uuid = request()->cookie('user_uuid');
+            }
+        });
+    }
 
     /**
      * The attributes that should be cast.
